@@ -1,0 +1,2 @@
+1- cd OneDrive\Desktop\tender-ai
+2- npm start
