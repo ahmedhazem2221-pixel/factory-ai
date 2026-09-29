@@ -230,3 +230,21 @@ test('handles faulty status, yellow banner, carrying over fault description to u
   expect(screen.queryByText(/Active Fault/i)).not.toBeInTheDocument();
 });
 
+test('toggles machine list collapse state via mobile toggle button', () => {
+  render(<App />);
+
+  // Toggle button should be rendered
+  const toggleBtn = screen.getByRole('button', { name: /toggle machine list/i });
+  expect(toggleBtn).toBeInTheDocument();
+  expect(toggleBtn).toHaveTextContent(/Hide ▲/i);
+
+  // Click toggle button to collapse list
+  fireEvent.click(toggleBtn);
+  expect(toggleBtn).toHaveTextContent(/Show ▼/i);
+
+  // Click toggle button again to expand list
+  fireEvent.click(toggleBtn);
+  expect(toggleBtn).toHaveTextContent(/Hide ▲/i);
+});
+
+

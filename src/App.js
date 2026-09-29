@@ -116,6 +116,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isMachineListOpen, setIsMachineListOpen] = useState(true);
 
   // Form states
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -405,20 +406,30 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#f0f4f8", fontFamily: "'Segoe UI', Arial, sans-serif" }}>
 
-      <div style={{ backgroundColor: "#0a1628", padding: "0 32px", display: "flex", alignItems: "center", height: "65px", boxShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>
+      <div className="app-header">
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ width: "36px", height: "36px", backgroundColor: "#e94560", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", color: "white", fontSize: "16px" }}>M</div>
-          <span style={{ color: "white", fontSize: "20px", fontWeight: "600" }}>FactoryAI</span>
-          <span style={{ color: "#4a9eff", fontSize: "12px", backgroundColor: "rgba(74,158,255,0.15)", padding: "2px 8px", borderRadius: "20px" }}>Pro</span>
+          <div style={{ width: "36px", height: "36px", backgroundColor: "#e94560", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", color: "white", fontSize: "16px", flexShrink: 0 }}>M</div>
+          <span className="app-header-logo-text">FactoryAI</span>
+          <span style={{ color: "#4a9eff", fontSize: "12px", backgroundColor: "rgba(74,158,255,0.15)", padding: "2px 8px", borderRadius: "20px", flexShrink: 0 }}>Pro</span>
         </div>
-        <span style={{ color: "#8892a4", fontSize: "13px", marginLeft: "auto" }}>Machine Intelligence System</span>
+        <span className="app-header-subtitle">Machine Intelligence System</span>
       </div>
 
-      <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "32px 20px", display: "grid", gridTemplateColumns: "320px 1fr", gap: "24px" }}>
+      <div className="main-layout-grid">
 
         <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-            <h3 style={{ color: "#374151", fontSize: "13px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em", margin: 0 }}>Factory Machines</h3>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", gap: "8px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <h3 style={{ color: "#374151", fontSize: "13px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em", margin: 0 }}>Factory Machines</h3>
+              <button
+                type="button"
+                className="mobile-toggle-btn"
+                onClick={() => setIsMachineListOpen(!isMachineListOpen)}
+                aria-label="Toggle Machine List"
+              >
+                {isMachineListOpen ? "Hide ▲" : "Show ▼"}
+              </button>
+            </div>
             <button
               onClick={() => {
                 setIsAddingNew(true);
@@ -444,91 +455,96 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
                 fontWeight: "600",
                 cursor: "pointer",
                 transition: "background-color 0.2s",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
               }}
             >
               + Add Machine
             </button>
           </div>
-          <div style={{ marginBottom: "16px", position: "relative" }}>
-            <input
-              type="text"
-              placeholder="Search by name or status..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "10px 14px 10px 36px",
-                borderRadius: "10px",
-                border: "1.5px solid #e5e7eb",
-                fontSize: "14px",
-                outline: "none",
-                boxSizing: "border-box",
-                backgroundColor: "white",
-                color: "#1f2937",
-                transition: "all 0.2s ease-in-out",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "#e94560";
-                e.target.style.boxShadow = "0 0 0 3px rgba(233, 69, 96, 0.15)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "#e5e7eb";
-                e.target.style.boxShadow = "0 2px 4px rgba(0,0,0,0.02)";
-              }}
-            />
-            <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#9ca3af", fontSize: "14px", pointerEvents: "none" }}>
-              🔍
-            </span>
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
+          
+          <div className={`machine-list-panel ${isMachineListOpen ? "" : "collapsed"}`}>
+            <div style={{ marginBottom: "16px", position: "relative" }}>
+              <input
+                type="text"
+                placeholder="Search by name or status..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
-                  position: "absolute",
-                  right: "12px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "#9ca3af",
-                  fontSize: "12px",
-                  padding: "4px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  width: "100%",
+                  padding: "10px 14px 10px 36px",
+                  borderRadius: "10px",
+                  border: "1.5px solid #e5e7eb",
+                  fontSize: "14px",
+                  outline: "none",
+                  boxSizing: "border-box",
+                  backgroundColor: "white",
+                  color: "#1f2937",
+                  transition: "all 0.2s ease-in-out",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
                 }}
-              >
-                ✕
-              </button>
+                onFocus={(e) => {
+                  e.target.style.borderColor = "#e94560";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(233, 69, 96, 0.15)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "#e5e7eb";
+                  e.target.style.boxShadow = "0 2px 4px rgba(0,0,0,0.02)";
+                }}
+              />
+              <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#9ca3af", fontSize: "14px", pointerEvents: "none" }}>
+                🔍
+              </span>
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  style={{
+                    position: "absolute",
+                    right: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#9ca3af",
+                    fontSize: "12px",
+                    padding: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            {filteredMachines.length === 0 ? (
+              <div style={{ padding: "24px 16px", textAlign: "center", color: "#6b7280", backgroundColor: "white", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", border: "1px dashed #e5e7eb" }}>
+                <div style={{ fontSize: "24px", marginBottom: "8px" }}>🔍</div>
+                <div style={{ fontWeight: "600", fontSize: "14px", color: "#374151" }}>No machines found</div>
+                <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "4px" }}>Try searching for a different name or status.</div>
+              </div>
+            ) : (
+              filteredMachines.map((m) => (
+                <div
+                  key={m.id}
+                  onClick={() => { setSelectedMachine(m); setAnswer(""); setQuestion(""); setActiveTab("overview"); setIsAddingNew(false); setIsEditing(false); setIsLoggingRepair(false); }}
+                  style={{ backgroundColor: selectedMachine?.id === m.id ? "#0a1628" : "white", borderRadius: "12px", padding: "16px", marginBottom: "10px", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", border: selectedMachine?.id === m.id ? "2px solid #e94560" : "2px solid transparent", transition: "all 0.2s" }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
+                    <span style={{ fontWeight: "600", fontSize: "14px", color: selectedMachine?.id === m.id ? "white" : "#1f2937" }}>{m.name}</span>
+                  </div>
+                  <div style={{ fontSize: "12px", color: selectedMachine?.id === m.id ? "#8892a4" : "#6b7280", marginBottom: "8px" }}>{m.model}</div>
+                  <StatusBadge status={m.status} />
+                </div>
+              ))
             )}
           </div>
-          {filteredMachines.length === 0 ? (
-            <div style={{ padding: "24px 16px", textAlign: "center", color: "#6b7280", backgroundColor: "white", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", border: "1px dashed #e5e7eb" }}>
-              <div style={{ fontSize: "24px", marginBottom: "8px" }}>🔍</div>
-              <div style={{ fontWeight: "600", fontSize: "14px", color: "#374151" }}>No machines found</div>
-              <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "4px" }}>Try searching for a different name or status.</div>
-            </div>
-          ) : (
-            filteredMachines.map((m) => (
-              <div
-                key={m.id}
-                onClick={() => { setSelectedMachine(m); setAnswer(""); setQuestion(""); setActiveTab("overview"); setIsAddingNew(false); setIsEditing(false); setIsLoggingRepair(false); }}
-                style={{ backgroundColor: selectedMachine?.id === m.id ? "#0a1628" : "white", borderRadius: "12px", padding: "16px", marginBottom: "10px", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", border: selectedMachine?.id === m.id ? "2px solid #e94560" : "2px solid transparent", transition: "all 0.2s" }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
-                  <span style={{ fontWeight: "600", fontSize: "14px", color: selectedMachine?.id === m.id ? "white" : "#1f2937" }}>{m.name}</span>
-                </div>
-                <div style={{ fontSize: "12px", color: selectedMachine?.id === m.id ? "#8892a4" : "#6b7280", marginBottom: "8px" }}>{m.model}</div>
-                <StatusBadge status={m.status} />
-              </div>
-            ))
-          )}
         </div>
 
         <div>
           {isAddingNew ? (
-            <div style={{ backgroundColor: "white", borderRadius: "16px", padding: "32px", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", marginBottom: "20px" }}>
+            <div className="card-container">
               <h2 style={{ color: "#0a1628", fontSize: "20px", fontWeight: "600", marginBottom: "6px" }}>Add New Machine</h2>
               <p style={{ color: "#6b7280", fontSize: "14px", marginBottom: "24px" }}>Register a new machine in the factory monitoring system.</p>
               
@@ -724,7 +740,7 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
               </form>
             </div>
           ) : isEditing ? (
-            <div style={{ backgroundColor: "white", borderRadius: "16px", padding: "32px", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", marginBottom: "20px" }}>
+            <div className="card-container">
               <h2 style={{ color: "#0a1628", fontSize: "20px", fontWeight: "600", marginBottom: "6px" }}>Edit Machine</h2>
               <p style={{ color: "#6b7280", fontSize: "14px", marginBottom: "24px" }}>Modify machine specifications, components, or repair logs.</p>
               
@@ -937,7 +953,7 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
                       >
                         ✕ Remove
                       </button>
-                      <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: "8px", marginTop: "16px" }}>
+                      <div className="edit-repair-row-grid">
                         <span style={{ fontSize: "11px", fontWeight: "600", color: "#4b5563" }}>Date:</span>
                         <input
                           type="text"
@@ -1018,15 +1034,15 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
               </form>
             </div>
           ) : !selectedMachine ? (
-            <div style={{ backgroundColor: "white", borderRadius: "16px", padding: "60px", textAlign: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
+            <div className="card-container" style={{ textAlign: "center" }}>
               <div style={{ fontSize: "48px", marginBottom: "16px" }}>🏭</div>
               <h2 style={{ color: "#0a1628", fontSize: "20px", fontWeight: "600", marginBottom: "8px" }}>Select a Machine</h2>
               <p style={{ color: "#6b7280", fontSize: "14px" }}>Choose a machine from the left panel to view its details, repair history, and ask the AI assistant questions.</p>
             </div>
           ) : (
             <>
-              <div style={{ backgroundColor: "white", borderRadius: "16px", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", marginBottom: "20px" }}>
-                <div style={{ backgroundColor: "#0a1628", padding: "20px 28px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div className="card-container" style={{ padding: 0, overflow: "hidden" }}>
+                <div className="machine-detail-header">
                   <div>
                     <h2 style={{ color: "white", fontSize: "18px", fontWeight: "600", margin: "0 0 4px 0" }}>{selectedMachine.name}</h2>
                     <div style={{ color: "#8892a4", fontSize: "13px" }}>{selectedMachine.model} — {selectedMachine.location}</div>
@@ -1073,13 +1089,8 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
                 </div>
 
                 {selectedMachine.status === "faulty" && selectedMachine.activeFault && (
-                  <div style={{
+                  <div className="fault-banner" style={{
                     background: "linear-gradient(135deg, #78350f 0%, #b45309 100%)",
-                    padding: "18px 28px",
-                    display: "flex",
-                    alignItems: "flex-start",
-                    justifyContent: "space-between",
-                    gap: "16px",
                     borderTop: "3px solid #f59e0b",
                   }}>
                     <div style={{ display: "flex", gap: "14px", alignItems: "flex-start", flex: 1 }}>
@@ -1103,13 +1114,8 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
                 )}
 
                 {selectedMachine.status === "under maintenance" && selectedMachine.activeFault && (
-                  <div style={{
+                  <div className="fault-banner" style={{
                     background: "linear-gradient(135deg, #7c2d12 0%, #991b1b 100%)",
-                    padding: "18px 28px",
-                    display: "flex",
-                    alignItems: "flex-start",
-                    justifyContent: "space-between",
-                    gap: "16px",
                     borderTop: "3px solid #ef4444",
                     animation: "pulseBorder 2s ease-in-out infinite",
                   }}>
@@ -1168,23 +1174,24 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
                   </div>
                 )}
 
-                <div style={{ display: "flex", borderBottom: "1px solid #e5e7eb" }}>
+                <div className="tab-nav">
                   {["overview", "components", "repairs", "ask"].map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
-                      style={{ padding: "14px 20px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: "600", backgroundColor: "transparent", color: activeTab === tab ? "#e94560" : "#6b7280", borderBottom: activeTab === tab ? "2px solid #e94560" : "2px solid transparent", textTransform: "capitalize" }}
+                      className="tab-btn"
+                      style={{ color: activeTab === tab ? "#e94560" : "#6b7280", borderBottom: activeTab === tab ? "2px solid #e94560" : "2px solid transparent" }}
                     >
                       {tab === "ask" ? "🤖 Ask AI" : tab.charAt(0).toUpperCase() + tab.slice(1)}
                     </button>
                   ))}
                 </div>
 
-                <div style={{ padding: "24px" }}>
+                <div className="card-padding">
 
                   {activeTab === "overview" && (
                     <div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "20px" }}>
+                      <div className="overview-grid">
                         <div style={{ backgroundColor: "#f9fafb", borderRadius: "10px", padding: "16px" }}>
                           <div style={{ fontSize: "12px", color: "#9ca3af", marginBottom: "4px" }}>MAINTENANCE SCHEDULE</div>
                           <div style={{ fontSize: "14px", color: "#1f2937", fontWeight: "500" }}>{selectedMachine.maintenanceSchedule}</div>
@@ -1202,7 +1209,7 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
                   )}
 
                   {activeTab === "components" && (
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                    <div className="components-grid">
                       {selectedMachine.components.map((c, i) => (
                         <div key={i} style={{ backgroundColor: "#f9fafb", borderRadius: "8px", padding: "12px 16px", display: "flex", alignItems: "center", gap: "10px" }}>
                           <div style={{ width: "8px", height: "8px", backgroundColor: "#10b981", borderRadius: "50%", flexShrink: 0 }}></div>
@@ -1246,7 +1253,7 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
                         <div style={{ backgroundColor: "#f9fafb", borderRadius: "10px", padding: "16px", border: "1px solid #e5e7eb", marginBottom: "20px" }}>
                           <h4 style={{ margin: "0 0 12px 0", fontSize: "13px", fontWeight: "600", color: "#374151" }}>Log New Repair</h4>
                           <form onSubmit={handleLogRepairSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                            <div className="log-repair-inputs-grid">
                               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                 <label style={{ fontSize: "11px", fontWeight: "600", color: "#4b5563" }}>Date *</label>
                                 <input
@@ -1353,7 +1360,7 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
                   {activeTab === "ask" && (
                     <div>
                       <p style={{ color: "#6b7280", fontSize: "14px", marginBottom: "16px" }}>Ask anything about this machine — its components, how to fix an issue, maintenance tips, or repair history.</p>
-                      <div style={{ display: "flex", gap: "10px", marginBottom: "16px" }}>
+                      <div className="ai-input-container">
                         <input
                           type="text"
                           placeholder="e.g. How do I fix a glue pot issue? What repairs has this machine had?"
