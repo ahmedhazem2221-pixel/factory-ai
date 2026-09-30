@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Routes, Route, useParams, useNavigate } from "react-router-dom";
+import { QRCodeSVG } from "qrcode.react";
 
 const machines = [
   {
@@ -108,7 +110,10 @@ function StatusBadge({ status }) {
   );
 }
 
-function App() {
+function AppContent() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [machineList, setMachineList] = useState(machines);
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [question, setQuestion] = useState("");
@@ -117,6 +122,16 @@ function App() {
   const [activeTab, setActiveTab] = useState("overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [isMachineListOpen, setIsMachineListOpen] = useState(true);
+
+  useEffect(() => {
+    if (id) {
+      const machineId = parseInt(id, 10);
+      const found = machineList.find((m) => m.id === machineId);
+      if (found) {
+        setSelectedMachine(found);
+      }
+    }
+  }, [id, machineList]);
 
   // Form states
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -214,6 +229,7 @@ function App() {
     setNewFaultDescription("");
     setNewFaultTechnician("");
     setFormErrors({});
+    navigate(`/machine/${newMachine.id}`);
   };
 
   const handleEditFormSubmit = (e) => {
@@ -444,6 +460,7 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
                 setNewFaultDescription("");
                 setNewFaultTechnician("");
                 setFormErrors({});
+                navigate("/");
               }}
               style={{
                 backgroundColor: isAddingNew ? "#1f2937" : "#e94560",
@@ -528,7 +545,16 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
               filteredMachines.map((m) => (
                 <div
                   key={m.id}
-                  onClick={() => { setSelectedMachine(m); setAnswer(""); setQuestion(""); setActiveTab("overview"); setIsAddingNew(false); setIsEditing(false); setIsLoggingRepair(false); }}
+                  onClick={() => {
+                    setSelectedMachine(m);
+                    setAnswer("");
+                    setQuestion("");
+                    setActiveTab("overview");
+                    setIsAddingNew(false);
+                    setIsEditing(false);
+                    setIsLoggingRepair(false);
+                    navigate(`/machine/${m.id}`);
+                  }}
                   style={{ backgroundColor: selectedMachine?.id === m.id ? "#0a1628" : "white", borderRadius: "12px", padding: "16px", marginBottom: "10px", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", border: selectedMachine?.id === m.id ? "2px solid #e94560" : "2px solid transparent", transition: "all 0.2s" }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
@@ -1205,6 +1231,134 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
                         <div style={{ fontSize: "12px", color: "#9ca3af", marginBottom: "8px" }}>SPECIFICATIONS</div>
                         <div style={{ fontSize: "14px", color: "#1f2937", lineHeight: "1.7" }}>{selectedMachine.specs}</div>
                       </div>
+
+                      {/* QR Code Generator Section */}
+                      <div style={{ backgroundColor: "#f9fafb", borderRadius: "10px", padding: "16px", border: "1px solid #e5e7eb", marginTop: "16px" }}>
+                        <div style={{ fontSize: "12px", color: "#9ca3af", marginBottom: "8px", fontWeight: "600", letterSpacing: "0.05em" }}>MACHINE QR CODE & ASSET TAG</div>
+                        <div style={{ display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap" }}>
+                          <div style={{ backgroundColor: "white", padding: "12px", borderRadius: "8px", border: "1px solid #e5e7eb", display: "inline-block" }}>
+                            <QRCodeSVG
+                              id={`qr-code-svg-${selectedMachine.id}`}
+                              value={`${window.location.origin}/machine/${selectedMachine.id}`}
+                              size={130}
+                              level="H"
+                              marginSize={1}
+                            />
+                          </div>
+                          <div style={{ flex: 1, minWidth: "180px" }}>
+                            <div style={{ fontSize: "14px", color: "#1f2937", fontWeight: "600", marginBottom: "4px" }}>
+                              Direct Link Asset Tag
+                            </div>
+                            <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "12px", lineHeight: "1.5" }}>
+                              Scan this QR code with a mobile camera to open this machine's status, specifications, and maintenance logs directly.
+                            </div>
+                            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                              <button
+                                onClick={() => {
+                                  const svgEl = document.getElementById(`qr-code-svg-${selectedMachine.id}`);
+                                  if (svgEl) {
+                                    const svgData = new XMLSerializer().serializeToString(svgEl);
+                                    const canvas = document.createElement("canvas");
+                                    const ctx = canvas.getContext("2d");
+                                    const img = new Image();
+                                    img.onload = () => {
+                                      canvas.width = img.width || 300;
+                                      canvas.height = img.height || 300;
+                                      if (ctx) {
+                                        ctx.fillStyle = "white";
+                                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                        ctx.drawImage(img, 0, 0);
+                                      }
+                                      const pngUrl = canvas.toDataURL("image/png");
+                                      const downloadLink = document.createElement("a");
+                                      downloadLink.href = pngUrl;
+                                      downloadLink.download = `${selectedMachine.name.replace(/\s+/g, "_")}_QR.png`;
+                                      downloadLink.click();
+                                    };
+                                    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+                                  }
+                                }}
+                                style={{
+                                  backgroundColor: "#0a1628",
+                                  color: "white",
+                                  border: "none",
+                                  padding: "8px 14px",
+                                  borderRadius: "6px",
+                                  fontSize: "12px",
+                                  fontWeight: "600",
+                                  cursor: "pointer",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "6px",
+                                }}
+                              >
+                                📥 Download QR Code
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const svgEl = document.getElementById(`qr-code-svg-${selectedMachine.id}`);
+                                  if (svgEl) {
+                                    const svgData = new XMLSerializer().serializeToString(svgEl);
+                                    const svgBase64 = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+                                    const printWindow = window.open("", "_blank");
+                                    if (printWindow) {
+                                      printWindow.document.write(`
+                                        <!DOCTYPE html>
+                                        <html>
+                                          <head>
+                                            <title>Print QR Code - ${selectedMachine.name}</title>
+                                            <style>
+                                              body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; padding: 40px; background-color: #fff; margin: 0; }
+                                              .qr-card { border: 2px solid #0a1628; border-radius: 16px; padding: 28px; display: inline-block; max-width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+                                              .logo { font-size: 14px; font-weight: 700; color: #e94560; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+                                              h2 { margin: 0 0 6px 0; color: #0a1628; font-size: 20px; }
+                                              p { margin: 4px 0; color: #4b5563; font-size: 13px; }
+                                              img { margin: 16px 0; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; }
+                                              .url { font-size: 11px; color: #6b7280; font-family: monospace; word-break: break-all; margin-top: 8px; }
+                                            </style>
+                                          </head>
+                                          <body>
+                                            <div class="qr-card">
+                                              <div class="logo">FactoryAI Machine Intelligence</div>
+                                              <h2>${selectedMachine.name}</h2>
+                                              <p><strong>Model:</strong> ${selectedMachine.model}</p>
+                                              <p><strong>Location:</strong> ${selectedMachine.location}</p>
+                                              <img src="${svgBase64}" width="160" height="160" alt="QR Code" />
+                                              <div class="url">${window.location.origin}/machine/${selectedMachine.id}</div>
+                                            </div>
+                                            <script>
+                                              window.onload = function() {
+                                                window.print();
+                                                window.close();
+                                              };
+                                            </script>
+                                          </body>
+                                        </html>
+                                      `);
+                                      printWindow.document.close();
+                                    }
+                                  }
+                                }}
+                                style={{
+                                  backgroundColor: "#f3f4f6",
+                                  color: "#374151",
+                                  border: "1px solid #d1d5db",
+                                  padding: "8px 14px",
+                                  borderRadius: "6px",
+                                  fontSize: "12px",
+                                  fontWeight: "600",
+                                  cursor: "pointer",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "6px",
+                                }}
+                              >
+                                🖨️ Print QR Code
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -1397,6 +1551,15 @@ ${selectedMachine.repairHistory.map(r => `- ${r.date}: ${r.issue} → ${r.action
         </div>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<AppContent />} />
+      <Route path="/machine/:id" element={<AppContent />} />
+    </Routes>
   );
 }
 

@@ -1,8 +1,17 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 
+const renderWithRouter = (initialEntries = ['/']) => {
+  return render(
+    <MemoryRouter initialEntries={initialEntries}>
+      <App />
+    </MemoryRouter>
+  );
+};
+
 test('renders search input and filters machines', () => {
-  render(<App />);
+  renderWithRouter();
   
   // Verify search input is present
   const searchInput = screen.getByPlaceholderText(/search by name or status/i);
@@ -35,7 +44,7 @@ test('renders search input and filters machines', () => {
 });
 
 test('allows adding a new machine to the system', () => {
-  render(<App />);
+  renderWithRouter();
 
   // Click "+ Add Machine" button
   const addButton = screen.getByRole('button', { name: /\+ add machine/i });
@@ -74,7 +83,7 @@ test('allows adding a new machine to the system', () => {
 });
 
 test('allows editing an existing machine, its specs, and repair history', () => {
-  render(<App />);
+  renderWithRouter();
 
   // Select CNC Panel Saw
   fireEvent.click(screen.getByText('CNC Panel Saw'));
@@ -115,7 +124,7 @@ test('allows editing an existing machine, its specs, and repair history', () => 
 });
 
 test('allows logging a new repair directly from the Repairs tab', () => {
-  render(<App />);
+  renderWithRouter();
 
   // Select CNC Panel Saw
   fireEvent.click(screen.getByText('CNC Panel Saw'));
@@ -150,7 +159,7 @@ test('allows logging a new repair directly from the Repairs tab', () => {
 });
 
 test('shows active fault banner for under-maintenance machine and Mark as Fixed resolves it', () => {
-  render(<App />);
+  renderWithRouter();
 
   // Select the CNC Router which is under maintenance with an active fault
   fireEvent.click(screen.getByText('CNC Router'));
@@ -180,7 +189,7 @@ test('shows active fault banner for under-maintenance machine and Mark as Fixed 
 });
 
 test('handles faulty status, yellow banner, carrying over fault description to under maintenance, and Mark as Fixed', () => {
-  render(<App />);
+  renderWithRouter();
 
   // Select CNC Panel Saw
   fireEvent.click(screen.getByText('CNC Panel Saw'));
@@ -231,7 +240,7 @@ test('handles faulty status, yellow banner, carrying over fault description to u
 });
 
 test('toggles machine list collapse state via mobile toggle button', () => {
-  render(<App />);
+  renderWithRouter();
 
   // Toggle button should be rendered
   const toggleBtn = screen.getByRole('button', { name: /toggle machine list/i });
@@ -246,5 +255,25 @@ test('toggles machine list collapse state via mobile toggle button', () => {
   fireEvent.click(toggleBtn);
   expect(toggleBtn).toHaveTextContent(/Hide ▲/i);
 });
+
+test('opens specific machine details when visiting URL directly (e.g. /machine/3)', () => {
+  // Visit /machine/3 directly
+  renderWithRouter(['/machine/3']);
+
+  // Machine 3 is "CNC Router" (Biesse Rover B 4.35)
+  // Check that CNC Router is loaded and selected automatically
+  expect(screen.getByText('Biesse Rover B 4.35 — Factory B - Section 1')).toBeInTheDocument();
+  expect(screen.getByText(/Spindle motor overheating/i)).toBeInTheDocument();
+});
+
+test('renders QR code generator with download and print options on machine detail page', () => {
+  renderWithRouter(['/machine/1']);
+
+  // Overview tab should contain MACHINE QR CODE & ASSET TAG header
+  expect(screen.getByText(/MACHINE QR CODE & ASSET TAG/i)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /download qr code/i })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /print qr code/i })).toBeInTheDocument();
+});
+
 
 
